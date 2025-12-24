@@ -1,0 +1,127 @@
+---
+title: "Taiwan Universities: Exploratory Analysis"
+author: "José Donado"
+date: '`r Sys.Date()`'
+output: html_document
+number_sections: true
+---
+
+# Description
+
+This R Markdown presents a brief exploratory analysis of the list of universities and colleges available to study in Taiwan. The main objective is to determine how many of them exist, how many of the universities offer scholarships and how many of them each university/college offers. It is also expected to know what institutions type there are and choose 10 that are of my interest.
+
+## Dataset and directory
+
+```{r}
+# directoryyyy
+setwd("C:/Users/josep/Downloads")
+
+# data source
+library(readxl)
+df <- read_excel("University_or_College_381b08.xlsx")
+
+## LIBRARIES
+library(tidyverse)
+library(dplyr)
+library(skimr)
+```
+
+# Exploratory Data Analysis (EDA)
+
+## Questions?
+
+1.  Is there a relation between location and scholarship?
+2.  How many universities offer scholarship?
+3.  Is higher program related with better education?
+4.  Count of Unis and Colleges.
+5.  what type of institutions there are?
+6.  how many unis per region?
+7.  quantity of programs and scholarships per region (in a table).
+8.  What is the dispersion, mean, and other statistical parameters of the variable Program, Scholarship?
+
+> Far better an approximate answer to the right question, which is often vague, than an exact answer to the wrong question, which can always be made precise.
+
+> > — John Tukey
+
+## About the dataset
+
+```{r}
+glimpse(df)
+
+```
+
+140 observations, 7 variables: doubles: Program, Scholarship chr: `School Name`, region, etc...
+
+```{r}
+library(skimr)
+skim(df)
+```
+There are 140 universities, 5 regions, 4 types of institutions.
+
+I need to make the regions and types of institutions factors...
+```{r}
+df$region <- as.factor(df$region)
+df$`Institution Type` <- as.factor(df$`Institution Type`)
+
+```
+
+
+## Answers to questions
+1.  Is there a relation between location and scholarship?
+
+```{r}
+df %>%
+  group_by(region) %>%
+  summarise(Total_Scholarship=sum(Scholarship, na.rm = TRUE)) %>%
+  arrange(desc(Total_Scholarship))
+
+
+```
+```{r}
+library(dplyr)
+
+df %>%
+  group_by(region) %>%
+  summarise(
+    Total_Scholarships = sum(Scholarship, na.rm = TRUE),    # Adds up all scholarships (assuming 1=Yes)
+    Total_Schools = n_distinct(`School Name`),              # Counts unique universities
+    Scholarships_Per_School = Total_Scholarships*100 / Total_Schools  # Calculates the ratio
+  ) %>%
+  arrange(desc(Scholarships_Per_School))
+```
+Eastern Taiwan has a bigger proportion 
+
+
+
+2.  How many universities offer scholarship?
+3.  Is higher program related with better education?
+4.  Count of Unis and Colleges.
+5.  what type of institutions there are?
+6.  how many unis per region?
+
+
+
+```{r}
+df %>%
+  group_by(region) %>%
+  count(region) %>%
+  arrange(desc(n))
+
+ggplot(data = df, aes(x = reorder(region, region, function(x) length(x)))) +
+  
+  # 2. Draw the bars
+  geom_bar() +
+  
+  # 3. Add the text
+  geom_text(
+    stat = "count",                 
+    aes(label = after_stat(count)), 
+    vjust = -0.5                    
+  )
+
+```
+The majority of unis are in Northern Taiwan, followed by Southern and Central. There are only 7 left in the East and Offshore Islands, something that suggests an educational oligarchy. 
+
+7.  quantity of programs and scholarships per region (in a table).
+8.  What is the dispersion, mean, and other statistical parameters of the variable Program, Scholarship?
+
