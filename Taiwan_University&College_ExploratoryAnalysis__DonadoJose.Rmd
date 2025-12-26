@@ -89,14 +89,65 @@ df %>%
   ) %>%
   arrange(desc(Scholarships_Per_School))
 ```
-Eastern Taiwan has a bigger proportion 
+Eastern Taiwan has a bigger proportion of scholarships per amount of schools, followed by the northern region. Around half of the schools in southern and central Taiwan offer scholarships. 
 
+Withouth the need to do a further analysis it is conspicuous that there is a relation with region and quantity of scholarships since the proportion is statistically different between each region. 
 
+I would like to be in a region wich has a higher probability of offering a scholarship, not because I will apply to them, but because I hope there are more students that have been granted with one that I can relate to.
 
 2.  How many universities offer scholarship?
+
+```{r}
+
+df %>%
+  group_by(region) %>%
+  summarise(
+  
+    Total_Schools = n_distinct(`School Name`),
+    
+    
+    Number_Scholarship = n_distinct(`School Name`[Scholarship != 0]),
+    Percentage_of_Scholarships_region = Number_Scholarship*100 / Total_Schools
+  ) %>%
+  arrange(desc(Percentage_of_Scholarships_region))
+
+```
+Just 18 schools from the North offer scholarships. There are more schools that offer scholarships in Central and Southern Taiwan in proportion to the amount of scholarships they have.
+
 3.  Is higher program related with better education?
+
+Can't tell with this data. I need to investigate with other aproximation.
 4.  Count of Unis and Colleges.
+
+```{r}
+df %>%
+  group_by(region) %>%
+  count(region) %>%
+  arrange(desc(n))
+
+ggplot(data = df, aes(x = reorder(df$`Institution Type`, df$`Institution Type`, function(x) length(x)))) +
+  
+  geom_bar() +
+  
+
+  geom_text(
+    stat = "count",                 
+    aes(label = after_stat(count)), 
+    vjust = -0.5                    
+  )
+
+
+```
+There are 59 private technical universities and colleges, 34 private Unis, 32, national (public) and 15 national technical.
+
 5.  what type of institutions there are?
+
+```{r}
+summary(df$`Institution Type`)
+```
+
+
+
 6.  how many unis per region?
 
 
@@ -109,10 +160,9 @@ df %>%
 
 ggplot(data = df, aes(x = reorder(region, region, function(x) length(x)))) +
   
-  # 2. Draw the bars
   geom_bar() +
   
-  # 3. Add the text
+
   geom_text(
     stat = "count",                 
     aes(label = after_stat(count)), 
@@ -123,5 +173,70 @@ ggplot(data = df, aes(x = reorder(region, region, function(x) length(x)))) +
 The majority of unis are in Northern Taiwan, followed by Southern and Central. There are only 7 left in the East and Offshore Islands, something that suggests an educational oligarchy. 
 
 7.  quantity of programs and scholarships per region (in a table).
-8.  What is the dispersion, mean, and other statistical parameters of the variable Program, Scholarship?
+
+```{r}
+df %>%
+  group_by(region) %>%
+  summarise(
+  
+    Total_Schools = n_distinct(`School Name`),
+    
+    
+    Number_Scholarship = n_distinct(`School Name`[Scholarship != 0]),
+    
+    Programs = sum(Program)
+  ) %>% arrange(Programs)
+```
+Northern Taiwan offers the biggest amount of programs, which surpasses by 543 the next in the list: Southern Taiwan with 815. 
+
+This gives me a general grasp of what I'm going to find answering the next question:
+
+
+8.  Total Programs by Institution Type
+
+```{r}
+
+df %>%
+  group_by(`Institution Type`) %>%
+  summarise(
+    Total_Programs = sum(Program, na.rm = TRUE)
+  ) %>%
+  arrange(desc(Total_Programs)) 
+
+ggplot(df, aes(x= `Institution Type`, y = Program)) +
+  geom_col(fill='black') + 
+  
+  labs(title='Total Programs by Institution Type', x='Type of Institution', y = 'Total Programs')
+```
+
+National univerisites offer the most amount of programs (probably more diverse). Private universities are then, but technical seem to have much less.
+
+9. What is the dispersion, mean, and other statistical parameters of the variable Program, Scholarship?
+
+```{r}
+df %>%
+  summarise(
+    # --- Program Statistics ---
+    Avg_Program = mean(Program, na.rm = TRUE),
+    Median_Program = median(Program, na.rm = TRUE),
+    SD_Program = sd(Program, na.rm = TRUE),       # Measure of Dispersion
+    Var_Program = var(Program, na.rm = TRUE),     # Variance
+
+  )
+
+df %>%
+  summarise(
+
+    
+    # --- Scholarship Statistics ---
+    Avg_Scholarship = mean(Scholarship, na.rm = TRUE),
+    Median_Scholarship = median(Scholarship, na.rm = TRUE),
+    SD_Scholarship = sd(Scholarship, na.rm = TRUE),
+    Var_Scholarship = var(Scholarship, na.rm = TRUE)
+  )
+```
+The average amount of programs is 20 per univeristy but there is great dispersion with some having 0 programs, and since the median is inferior to the average it skews the program's distribution to the left. The median is a more representative statistics in this case. 
+
+On the other hand, the mayority of universities don't offer a scholarship, but there is a good chance that there will be a scholarship in one of the universities in the Norht, East or South.
+
 
