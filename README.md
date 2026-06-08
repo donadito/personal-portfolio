@@ -1,5 +1,5 @@
 # personal-portfolio
-Evidence of my personal projects related to Data Science, and some experimental models for weather forecasting. 
+Portfolio showcasing projects in Data Science, Machine Learning, and Data Engineering, including predictive modeling, ETL pipelines, and data analytics.
 
 
 My principles: 
